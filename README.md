@@ -1,2 +1,2 @@
 # Hack the box Writeups
-[Administrator](writeups/hackthebox/apps/Administrator.md)
+[Forest](writeups/hackthebox/apps/Forest.md)
